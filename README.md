@@ -92,3 +92,63 @@ Gelişmiş Özellikler:
 🚀 API entegrasyonları
 
 🚀 Güvenli ödeme sistemi
+
+📊 Teknik Detaylar
+Database Bağlantısı:
+python
+# SQLite veritabanı bağlantısı
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+API Entegrasyonu:
+python
+# Ürünleri API'den çekme
+response = requests.get('https://dummyjson.com/products?limit=20')
+products_data = response.json()['products']
+Güvenlik:
+python
+# Şifre hashleme
+user.set_password(password)  # SHA256 ile hashleniyor
+user.check_password(password)  # Güvenli doğrulama
+🎯 Projenin Yenilikçi Yönleri
+Çift Ödeme Sistemi - BLIK (Polonya'ya özel) + Kredi Kartı
+
+Gerçek Zamanlı Takip - Sipariş durumu simülasyonu
+
+Misafir Alışverişi - Üye olmadan sepete ekleme
+
+API Entegrasyonu - Gerçek ürün verileri
+
+Responsive Tasarım - Tüm cihazlarda çalışır
+
+📈 Performans Optimizasyonları
+Lazy Loading - Gerektiğinde veri çekme
+
+Database Indexing - Hızlı arama ve sorgular
+
+Session Management - Etkili kullanıcı yönetimi
+
+Error Handling - Kapsamlı hata yönetimi
+
+🔒 Güvenlik Önlemleri
+Şifre hashleme (Werkzeug)
+
+SQL injection koruması (SQLAlchemy)
+
+XSS koruması (Jinja2 template escaping)
+
+Session güvenliği
+
+Form validation
+
+---------------------------------------------
+
+Önce demo yapın (ana sayfa → ürün → sepet → ödeme)
+
+BLIK ödemesini gösterin (Polonya'ya özel)
+
+Sipariş takip simülasyonunu gösterin
+
+Responsive tasarımı gösterin (mobil görünüm)
+
+Teknoloji stack'ini anlatın
+
+Veri akışını açıklayın (API → Database → Frontend)
