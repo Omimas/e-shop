@@ -1,0 +1,203 @@
+{% extends "layout.html" %}
+
+{% block title %}Checkout - Omimas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Checkout</h2>
+    
+    <div class="checkout-container">
+        <div class="checkout-form">
+            <h3>Shipping Information</h3>
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label for="full_name">Full Name *</label>
+                    <input type="text" id="full_name" name="full_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="shipping_address">Shipping Address *</label>
+                    <textarea id="shipping_address" name="shipping_address" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email (optional)</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone (optional)</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="billing_address">Billing Address (optional)</label>
+                    <textarea id="billing_address" name="billing_address" rows="3"></textarea>
+                </div>
+                
+                <h3>Payment Method</h3>
+                <div class="payment-methods">
+                    <div class="payment-method" id="creditCardMethod">
+                        <input type="radio" id="credit_card" name="payment_method" value="credit_card" checked>
+                        <label for="credit_card">
+                            <h4><i class="fas fa-credit-card"></i> Credit Card</h4>
+                            <p>Pay securely with credit card</p>
+                        </label>
+                    </div>
+                    
+                    <div class="payment-method" id="blikMethod">
+                        <input type="radio" id="blik" name="payment_method" value="blik">
+                        <label for="blik">
+                            <h4><i class="fas fa-mobile-alt"></i> BLIK</h4>
+                            <p>Pay with 6-digit BLIK code</p>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Credit Card Form -->
+                <div class="payment-form" id="creditCardForm">
+                    <div class="form-group">
+                        <label for="card_number">Card Number * (16 digits)</label>
+                        <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" 
+                               pattern="[0-9]{16}" title="16 digit card number" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry_date">Expiry Date (optional)</label>
+                            <input type="text" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cvv">CVV (optional)</label>
+                            <input type="text" id="cvv" name="cvv" placeholder="123">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="card_holder">Card Holder Name (optional)</label>
+                        <input type="text" id="card_holder" name="card_holder">
+                    </div>
+                </div>
+                
+                <!-- BLIK Form -->
+                <div class="payment-form" id="blikForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="blik_code">BLIK Code *</label>
+                        <div class="blik-input">
+                            <input type="text" id="blik_code" name="blik_code" placeholder="123456" 
+                                   pattern="[0-9]{6}" title="6 digit BLIK code" required>
+                            <span style="margin-left: 10px; color: #666;">6-digit code from your banking app</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="checkout-btn">
+                    <i class="fas fa-lock"></i> Complete Payment - {{ total }} PLN
+                </button>
+            </form>
+        </div>
+        
+        <div class="checkout-summary">
+            <h3>Order Summary</h3>
+            
+            <div class="order-items">
+                {% for item in cart_items %}
+                <div class="order-item">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                    <div class="item-info">
+                        <h4>{{ item.product.name }}</h4>
+                        <p>Quantity: {{ item.quantity }}</p>
+                    </div>
+                    <div class="item-price">
+                        {{ item.product.price * item.quantity }} PLN
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="summary-item">
+                <span>Subtotal:</span>
+                <span>{{ total }} PLN</span>
+            </div>
+            <div class="summary-item">
+                <span>Shipping:</span>
+                <span>Free</span>
+            </div>
+            <div class="summary-item total">
+                <span>Total:</span>
+                <span>{{ total }} PLN</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Payment method değişince formları göster/gizle
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const creditCardForm = document.getElementById('creditCardForm');
+    const blikForm = document.getElementById('blikForm');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            if (this.value === 'credit_card') {
+                creditCardForm.style.display = 'block';
+                blikForm.style.display = 'none';
+            } else {
+                creditCardForm.style.display = 'none';
+                blikForm.style.display = 'block';
+            }
+        });
+    });
+    
+    // Form submission
+    document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const paymentMethod = formData.get('payment_method');
+        
+        try {
+            // Önce sipariş oluştur
+            const orderResponse = await fetch('/create_order', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const orderData = await orderResponse.json();
+            
+            if (!orderData.success) {
+                throw new Error(orderData.message);
+            }
+            
+            // Ödeme yap
+            let paymentResponse;
+            if (paymentMethod === 'credit_card') {
+                paymentResponse = await fetch('/pay_with_credit_card/' + orderData.order_id, {
+                    method: 'POST',
+                    body: formData
+                });
+            } else {
+                paymentResponse = await fetch('/pay_with_blik/' + orderData.order_id, {
+                    method: 'POST',
+                    body: formData
+                });
+            }
+            
+            const paymentData = await paymentResponse.json();
+            
+            if (paymentData.success) {
+                alert('Payment successful! Order number: ' + orderData.order_number);
+                window.location.href = '/order/' + orderData.order_number;
+            } else {
+                throw new Error(paymentData.message);
+            }
+            
+        } catch (error) {
+            alert('Payment failed: ' + error.message);
+        }
+    });
+});
+</script>
+{% endblock %}

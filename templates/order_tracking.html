@@ -1,0 +1,371 @@
+{% extends "layout.html" %}
+
+{% block title %}Order Tracking - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="order-tracking-container">
+        <div class="order-header">
+            <h2>Order #{{ order.order_number }}</h2>
+            <p>Placed on {{ order.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+        </div>
+
+        <div class="tracking-card">
+            <h3>Order Status</h3>
+            
+            <div class="tracking-steps">
+                <div class="tracking-step {% if order.status in ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered'] %}completed{% endif %}">
+                    <div class="step-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <span class="step-label">Order Placed</span>
+                </div>
+                
+                <div class="tracking-step {% if order.status in ['processing', 'shipped', 'out_for_delivery', 'delivered'] %}completed{% endif %}">
+                    <div class="step-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <span class="step-label">Processing</span>
+                </div>
+                
+                <div class="tracking-step {% if order.status in ['shipped', 'out_for_delivery', 'delivered'] %}completed{% endif %}">
+                    <div class="step-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <span class="step-label">Shipped</span>
+                </div>
+                
+                <div class="tracking-step {% if order.status in ['out_for_delivery', 'delivered'] %}completed{% endif %}">
+                    <div class="step-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <span class="step-label">Out for Delivery</span>
+                </div>
+                
+                <div class="tracking-step {% if order.status == 'delivered' %}completed{% endif %}">
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <span class="step-label">Delivered</span>
+                </div>
+            </div>
+
+            <div class="current-status">
+                <h4>Current Status: <span class="status-{{ order.status }}">{{ order.status|replace('_', ' ')|title }}</span></h4>
+                
+                <div class="simulation-controls">
+                    <button onclick="simulateOrder('{{ order.order_number }}')" class="simulate-btn">
+                        <i class="fas fa-forward"></i> Simulate Next Step
+                    </button>
+                    <span class="simulation-note">(Demo için sonraki aşamaya geç)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-details-grid">
+            <div class="order-info-card">
+                <h4><i class="fas fa-info-circle"></i> Order Details</h4>
+                <div class="info-item">
+                    <span>Order Number:</span>
+                    <span>{{ order.order_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span>Order Date:</span>
+                    <span>{{ order.created_at.strftime('%B %d, %Y %H:%M') }}</span>
+                </div>
+                <div class="info-item">
+                    <span>Total Amount:</span>
+                    <span class="price">{{ order.total_amount }} PLN</span>
+                </div>
+                <div class="info-item">
+                    <span>Payment Method:</span>
+                    <span>{{ order.payment_method|replace('_', ' ')|title }}</span>
+                </div>
+                <div class="info-item">
+                    <span>Payment Status:</span>
+                    <span class="status-{{ order.payment_status }}">{{ order.payment_status|title }}</span>
+                </div>
+            </div>
+
+            <div class="shipping-info-card">
+                <h4><i class="fas fa-truck"></i> Shipping Information</h4>
+                <div class="info-item">
+                    <span>Shipping Address:</span>
+                    <span>{{ order.shipping_address }}</span>
+                </div>
+                {% if order.tracking %}
+                <div class="info-item">
+                    <span>Tracking Number:</span>
+                    <span>{{ order.tracking[0].tracking_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span>Carrier:</span>
+                    <span>{{ order.tracking[0].carrier }}</span>
+                </div>
+                <div class="info-item">
+                    <span>Estimated Delivery:</span>
+                    <span>{{ order.tracking[0].estimated_delivery.strftime('%B %d, %Y') }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="order-items-card">
+            <h4><i class="fas fa-box"></i> Order Items</h4>
+            <div class="items-list">
+                {% for item in order.items %}
+                <div class="order-item">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                    <div class="item-details">
+                        <h5>{{ item.product.name }}</h5>
+                        <p>Quantity: {{ item.quantity }}</p>
+                        <p>Price: {{ item.price }} PLN each</p>
+                    </div>
+                    <div class="item-total">
+                        {{ item.price * item.quantity }} PLN
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function simulateOrder(orderNumber) {
+    try {
+        const response = await fetch('/api/simulate_order/' + orderNumber);
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Status updated: ' + data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Simulation error: ' + error.message);
+    }
+}
+
+// Otomatik refresh her 30 saniyede
+setInterval(() => {
+    location.reload();
+}, 30000);
+</script>
+
+<style>
+.order-tracking-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.order-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.tracking-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.tracking-steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.tracking-step {
+    text-align: center;
+    position: relative;
+}
+
+.tracking-step::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background: #ddd;
+    z-index: 1;
+}
+
+.tracking-step:last-child::after {
+    display: none;
+}
+
+.tracking-step.completed::after {
+    background: #27ae60;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ddd;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.tracking-step.completed .step-icon {
+    background: #27ae60;
+}
+
+.step-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.tracking-step.completed .step-label {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.current-status {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.simulation-controls {
+    margin-top: 1rem;
+}
+
+.simulate-btn {
+    padding: 0.8rem 1.5rem;
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.simulate-btn:hover {
+    background: #e65a2b;
+}
+
+.simulation-note {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.order-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.order-info-card,
+.shipping-info-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.order-items-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.price {
+    font-weight: bold;
+    color: #ff6b35;
+}
+
+.status-confirmed { color: #17a2b8; }
+.status-processing { color: #ffc107; }
+.status-shipped { color: #007bff; }
+.status-out_for_delivery { color: #6f42c1; }
+.status-delivered { color: #28a745; }
+.status-completed { color: #28a745; }
+.status-pending { color: #6c757d; }
+
+.items-list {
+    margin-top: 1rem;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.order-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.item-details h5 {
+    margin-bottom: 0.3rem;
+    color: #2c3e50;
+}
+
+.item-details p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin: 0.2rem 0;
+}
+
+.item-total {
+    font-weight: bold;
+    color: #ff6b35;
+    margin-left: auto;
+}
+
+@media (max-width: 768px) {
+    .order-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tracking-steps {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .tracking-step::after {
+        display: none;
+    }
+}
+</style>
+{% endblock %}

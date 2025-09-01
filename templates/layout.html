@@ -3,33 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omimas - Online Shopping</title>
+    <title>{% block title %}Omimas - Online Shopping{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <header>
         <div class="header-top">
             <div class="logo">
-                <h1 style="color: orange;">Omimas</h1>
+                <a href="{{ url_for('index') }}">
+                    <h1>Omimas</h1>
+                </a>
             </div>
+            
             <div class="search-box">
-                <input type="text" placeholder="Search for products...">
-                <button>Search</button>
+                <form action="{{ url_for('search') }}" method="get">
+                    <input type="text" name="q" placeholder="Search for products..." value="{{ request.args.get('q', '') }}">
+                    <select name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.slug }}" {% if request.args.get('category') == category.slug %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
             </div>
+            
             <div class="user-menu">
-                <a href="#">Login</a>
-                <a href="#">Register</a>
-                <a href="#">Cart (0)</a>
+                {% if session.username %}
+                    <span class="user-welcome">Welcome, {{ session.username }}</span>
+                    <a href="{{ url_for('account') }}"><i class="fas fa-user"></i> My Account</a>
+                    <a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart 
+                        <span class="cart-count">({{ session.get('cart_count', 0) }})</span>
+                    </a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    <a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a>
+                    <a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart 
+                        <span class="cart-count">({{ session.get('guest_cart_count', 0) }})</span>
+                    </a>
+                {% endif %}
             </div>
         </div>
+
+        <nav class="main-nav">
+            <ul>
+                {% for category in categories %}
+                <li><a href="{{ url_for('category_page', category_name=category.slug) }}">{{ category.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
     </header>
 
     <main>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
 
     <footer>
-        <p>&copy; 2024 Omimas. All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Omimas</h3>
+                <p>Your trusted online shopping destination with the best prices in Poland.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('search') }}">Products</a></li>
+                    <li><a href="#">Categories</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="{{ url_for('register') }}">Register</a></li>
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <p>Email: info@omimas.pl</p>
+                <p>Phone: +48 123 456 789</p>
+                <p>Address: Warsaw, Poland</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Omimas. All rights reserved.</p>
+        </div>
     </footer>
+
+    <script>
+    // Sepet sayacı güncelleme fonksiyonu
+    function updateCartCount() {
+        {% if session.username %}
+        // Giriş yapmış kullanıcı için
+        fetch('/api/cart_count')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const cartCountElements = document.querySelectorAll('.cart-count');
+                cartCountElements.forEach(element => {
+                    element.textContent = '(' + data.count + ')';
+                });
+                
+                // Session'da da güncelle (isteğe bağlı)
+                fetch('/api/update_session_cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cart_count: data.count })
+                });
+            })
+            .catch(error => {
+                console.error('Error updating cart count:', error);
+                // Hata durumunda 0 göster
+                const cartCountElements = document.querySelectorAll('.cart-count');
+                cartCountElements.forEach(element => {
+                    element.textContent = '(0)';
+                });
+            });
+        {% else %}
+        // Misafir kullanıcı için
+        const guestCart = {{ session.get('guest_cart', {})|tojson }};
+        const guestCount = Object.keys(guestCart).length;
+        
+        const cartCountElements = document.querySelectorAll('.cart-count');
+        cartCountElements.forEach(element => {
+            element.textContent = '(' + guestCount + ')';
+        });
+        
+        // Session'da da güncelle (isteğe bağlı)
+        fetch('/api/update_session_cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ guest_cart_count: guestCount })
+        });
+        {% endif %}
+    }
+
+    // Sepete ekleme fonksiyonu
+    function addToCart(productId, quantity = 1) {
+        const formData = new FormData();
+        formData.append('quantity', quantity);
+        
+        showLoadingIndicator(true);
+        
+        fetch('/add_to_cart/' + productId, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Sepet sayacını güncelle
+                updateCartCount();
+                
+                // Başarı mesajı göster
+                showFlashMessage(data.message, 'success');
+                
+                // Eğer misafir kullanıcıysa ve login önerisi göster
+                if (data.type === 'guest') {
+                    setTimeout(() => {
+                        if (confirm('Would you like to login or register to save your cart permanently?')) {
+                            window.location.href = '/register?redirect=' + encodeURIComponent(window.location.pathname);
+                        }
+                    }, 1500);
+                }
+            } else {
+                showFlashMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding to cart:', error);
+            showFlashMessage('An error occurred while adding to cart. Please try again.', 'error');
+        })
+        .finally(() => {
+            showLoadingIndicator(false);
+        });
+    }
+
+    // Flash mesajı gösterimi
+    function showFlashMessage(message, type = 'info') {
+        // Mevcut flash mesajlarını temizle
+        const existingAlerts = document.querySelectorAll('.flash-message');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Yeni flash mesajı oluştur
+        const flashMessage = document.createElement('div');
+        flashMessage.className = `flash-message alert alert-${type}`;
+        flashMessage.textContent = message;
+        flashMessage.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 300px;
+            max-width: 500px;
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(flashMessage);
+        
+        // 5 saniye sonra otomatik kapat
+        setTimeout(() => {
+            if (flashMessage.parentNode) {
+                flashMessage.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (flashMessage.parentNode) {
+                        flashMessage.parentNode.removeChild(flashMessage);
+                    }
+                }, 300);
+            }
+        }, 5000);
+        
+        // Kapatma butonu ekle
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.cssText = `
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: inherit;
+        `;
+        closeBtn.onclick = () => {
+            if (flashMessage.parentNode) {
+                flashMessage.parentNode.removeChild(flashMessage);
+            }
+        };
+        flashMessage.appendChild(closeBtn);
+    }
+
+    // Yükleniyor göstergesi
+    function showLoadingIndicator(show) {
+        let loader = document.getElementById('global-loader');
+        
+        if (show) {
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.id = 'global-loader';
+                loader.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 3px;
+                    background: linear-gradient(90deg, #ff6b35, #ff8c35, #ff6b35);
+                    background-size: 200% 100%;
+                    animation: loading 1.5s infinite;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(loader);
+                
+                // Animasyon için CSS ekle
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes loading {
+                        0% { background-position: 200% 0; }
+                        100% { background-position: -200% 0; }
+                    }
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        } else {
+            if (loader) {
+                loader.remove();
+            }
+        }
+    }
+
+    // Sayfa yüklendiğinde sepet sayacını güncelle
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartCount();
+        
+        // Her 30 saniyede bir sepet sayacını otomatik güncelle
+        setInterval(updateCartCount, 30000);
+        
+        // Form gönderimlerinde loading göster
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                showLoadingIndicator(true);
+            });
+        });
+        
+        // Link tıklamalarında loading göster
+        const links = document.querySelectorAll('a');
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.href && !this.href.includes('javascript:')) {
+                    showLoadingIndicator(true);
+                }
+            });
+        });
+    });
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+        showFlashMessage('An unexpected error occurred. Please refresh the page.', 'error');
+    });
+
+    // Online/offline durum takibi
+    window.addEventListener('online', function() {
+        showFlashMessage('Connection restored!', 'success');
+        updateCartCount(); // İnternet geri geldiğinde sepeti güncelle
+    });
+
+    window.addEventListener('offline', function() {
+        showFlashMessage('You are currently offline. Some features may not work.', 'warning');
+    });
+    </script>
 </body>
 </html>

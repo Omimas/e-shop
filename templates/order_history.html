@@ -1,0 +1,220 @@
+{% extends "layout.html" %}
+
+{% block title %}Order History - Omimas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Order History</h2>
+    
+    {% if orders %}
+    <div class="orders-list">
+        {% for order in orders %}
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-info">
+                    <h3 class="order-number">Order #{{ order.order_number }}</h3>
+                    <span class="order-date">Placed on {{ order.created_at.strftime('%B %d, %Y at %H:%M') }}</span>
+                </div>
+                <div class="order-status">
+                    <span class="status-{{ order.status }}">{{ order.status|replace('_', ' ')|title }}</span>
+                </div>
+            </div>
+            
+            <div class="order-details">
+                <div class="order-items">
+                    {% for item in order.items %}
+                    <div class="order-item">
+                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                        <div class="item-info">
+                            <h4>{{ item.product.name }}</h4>
+                            <p>Quantity: {{ item.quantity }}</p>
+                        </div>
+                        <div class="item-price">{{ item.price * item.quantity }} PLN</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="order-summary">
+                    <div class="summary-item">
+                        <span>Total Amount:</span>
+                        <span class="total-price">{{ order.total_amount }} PLN</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Payment Method:</span>
+                        <span>{{ order.payment_method|replace('_', ' ')|title }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Payment Status:</span>
+                        <span class="status-{{ order.payment_status }}">{{ order.payment_status|title }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-actions">
+                <a href="{{ url_for('order_tracking', order_number=order.order_number) }}" class="btn-primary">
+                    <i class="fas fa-truck"></i> Track Order
+                </a>
+                <a href="#" class="btn-secondary">
+                    <i class="fas fa-receipt"></i> View Invoice
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-orders">
+        <i class="fas fa-shopping-bag fa-3x"></i>
+        <h3>No orders yet</h3>
+        <p>Start shopping to see your orders here</p>
+        <a href="{{ url_for('index') }}" class="cta-button">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.order-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f1f1;
+}
+
+.order-info h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.order-date {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.order-status span {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.status-confirmed { background: #d1ecf1; color: #0c5460; }
+.status-processing { background: #fff3cd; color: #856404; }
+-status-shipped { background: #d4edda; color: #155724; }
+.status-out_for_delivery { background: #d6d8db; color: #383d41; }
+.status-delivered { background: #28a745; color: white; }
+.status-pending { background: #f8d7da; color: #721c24; }
+
+.order-items {
+    margin-bottom: 1.5rem;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.order-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.item-info h4 {
+    margin-bottom: 0.3rem;
+    color: #2c3e50;
+}
+
+.item-info p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.item-price {
+    font-weight: bold;
+    color: #ff6b35;
+}
+
+.order-summary {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.total-price {
+    font-weight: bold;
+    color: #ff6b35;
+    font-size: 1.1rem;
+}
+
+.order-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-primary {
+    padding: 0.8rem 1.5rem;
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: #e65a2b;
+}
+
+.btn-secondary {
+    padding: 0.8rem 1.5rem;
+    background: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.no-orders {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #7f8c8d;
+}
+
+.no-orders i {
+    margin-bottom: 1rem;
+    color: #bdc3c7;
+}
+</style>
+{% endblock %}
