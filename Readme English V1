@@ -1,140 +1,36 @@
- Omimas E-Commerce Project - Technical Details
-📋 Project Summary
-Omimas is a fully functional e-commerce platform targeting the Polish market. It offers a modern shopping experience similar to Allegro.
+# Omimas E-Commerce Platform (In Development)
 
-🛠️ Technologies Used
-Backend:
-Python 3.12 - Main programming language
+A high-performance, Flask-based e-commerce solution tailored for the Polish market. This project demonstrates a modern architecture similar to platforms like Allegro, focusing on localized UI/UX and core e-commerce logic.
 
-Flask 2.3.3 - Web framework
+## 🚀 Key Features
 
-Flask-SQLAlchemy 3.0.5 - ORM and database management
+* **Dynamic Inventory:** Integrated with **DummyJSON API** to fetch and synchronize real product data into a local SQLite database.
+* **Localization (Poland):** Support for **PLN** currency conversion and **BLIK** payment simulation **(UI Concept)**.
+* **User Management:** Secure authentication system with password hashing (SHA256) and session management.
+* **Advanced Cart & Checkout:** Real-time cart updates, guest checkout support, and an order tracking system **(Simulation)**.
+* **Review System (UI Concept):** Designed interface for user-generated content and rating logic.
 
-SQLite - Database (for development environment)
+## 🛠️ Technical Stack
 
-Werkzeug - Password hashing and security
+* **Backend:** Python 3.12, Flask 2.3.3
+* **Database (ORM):** Flask-SQLAlchemy 3.0.5 with SQLite (Development)
+* **Frontend:** HTML5, CSS3, JavaScript (ES6+), Jinja2 Template Engine
+* **Security:** Werkzeug (Password Hashing), SQLAlchemy (SQLi Protection)
+* **UI Elements:** Font Awesome 6
 
-Frontend:
-HTML5 - Page structure
+## 📂 Project Architecture
 
-CSS3 - Design and responsive layout
+### **Database Schema**
+The system relies on a relational database design with the following core models:
+* `User`: Authentication and profile management.
+* `Product & Category`: Inventory management with 20+ predefined categories.
+* `Cart & Order`: Transactional logic and order item tracking.
+* `ShippingTracking (Simulated)`: Interface for real-time order status simulation.
 
-JavaScript - Dynamic functions
-
-Jinja2 - Template engine
-
-Font Awesome 6 - Icons
-
-API Integrations:
-DummyJSON API - For product data
-
-RESTful API - Our own backend APIs
-
-🗃️ Database Structure
-Models:
-User - User information and authentication
-
-Product - Product catalog and details
-
-Category - Category management
-
-Cart - Shopping cart operations
-
-Order - Order management
-
-OrderItem - Order details
-
-Review - Product review and rating system
-
-ShippingTracking - Shipping tracking system
-
-🌐 Data Sources
-1. Product Data
-Source: DummyJSON API (https://dummyjson.com/products)
-
-Method: REST API GET request
-
-Process: Data from API is automatically saved to SQLite database
-
-Conversion: USD prices converted to PLN (1 USD = 4 PLN)
-
-2. Category Data
-Source: Manually defined (20+ categories)
-
-Structure: Smartphones, Laptops, Fragrances, Skincare, Groceries, etc.
-
-3. User Data
-Source: User registration form
-
-Security: Passwords stored as hashes
-
-⚙️ Project Features
-Core Features:
-✅ User registration and login system
-
-✅ Product catalog and search
-
-✅ Cart management (guest/member)
-
-✅ Payment system (BLIK + Credit Card)
-
-✅ Order tracking and management
-
-✅ Product review and rating system
-
-Advanced Features:
-🚀 Responsive design (mobile compatible)
-
-🚀 Real-time cart updates
-
-🚀 Order simulation and tracking
-
-🚀 API integrations
-
-🚀 Secure payment system
-
-📊 Technical Details
-Database Connection:
-python
-# SQLite database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-API Integration:
-python
-# Fetch products from API
-response = requests.get('https://dummyjson.com/products?limit=20')
+### **API Integration & Data Processing**
+Products are fetched from the external DummyJSON API and processed locally:
+```python
+# Real-time API Fetching Logic
+response = requests.get('[https://dummyjson.com/products?limit=20](https://dummyjson.com/products?limit=20)')
 products_data = response.json()['products']
-Security:
-python
-# Password hashing
-user.set_password(password)  # Hashed with SHA256
-user.check_password(password)  # Secure verification
-🎯 Innovative Aspects of the Project
-Dual Payment System - BLIK (specific to Poland) + Credit Card
-
-Real-time Tracking - Order status simulation
-
-Guest Shopping - Add to cart without registration
-
-API Integration - Real product data
-
-Responsive Design - Works on all devices
-
-📈 Performance Optimizations
-Lazy Loading - Data fetched when needed
-
-Database Indexing - Fast search and queries
-
-Session Management - Effective user management
-
-Error Handling - Comprehensive error management
-
-🔒 Security Measures
-Password hashing (Werkzeug)
-
-SQL injection protection (SQLAlchemy)
-
-XSS protection (Jinja2 template escaping)
-
-Session security
-
-Form validation
+# Data is then mapped and converted (1 USD = 4 PLN)
