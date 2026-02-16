@@ -1,13 +1,13 @@
 # Omimas E-Commerce Platform (In Development)
 
-A high-performance, Flask-based e-commerce solution tailored for the Polish market. This project demonstrates a modern architecture similar to platforms like Allegro, focusing on localized UI/UX and core e-commerce logic.
+A high-performance, Flask-based e-commerce solution tailored for the Polish market. This project features a modern architecture similar to platforms like Allegro, focusing on localized UI/UX, core e-commerce logic, and secure authentication.
 
 ## 🚀 Key Features
 
 * **Dynamic Inventory:** Integrated with **DummyJSON API** to fetch and synchronize real product data into a local SQLite database.
 * **Localization (Poland):** Support for **PLN** currency conversion and **BLIK** payment simulation **(UI Concept)**.
 * **User Management:** Secure authentication system with password hashing (SHA256) and session management.
-* **Advanced Cart & Checkout:** Real-time cart updates, guest checkout support, and an order tracking system **(Simulation)**.
+* **Advanced Cart & Checkout:** Real-time cart updates, guest checkout support, and a simulated order tracking system.
 * **Review System (UI Concept):** Designed interface for user-generated content and rating logic.
 
 ## 🛠️ Technical Stack
