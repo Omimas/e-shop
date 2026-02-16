@@ -1,154 +1,36 @@
-🛒 Omimas E-Ticaret Projesi - Teknik Detaylar
-📋 Proje Özeti
-Omimas, Polonya pazarına yönelik tam fonksiyonel bir e-ticaret platformudur. Allegro benzeri modern bir alışveriş deneyimi sunar.
+# Omimas E-Commerce Platform (In Development)
 
-🛠️ Kullanılan Teknolojiler
-Backend:
-Python 3.12 - Ana programlama dili
+A high-performance, Flask-based e-commerce solution tailored for the Polish market. This project demonstrates a modern architecture similar to platforms like Allegro, focusing on localized UI/UX and core e-commerce logic.
 
-Flask 2.3.3 - Web framework
+## 🚀 Key Features
 
-Flask-SQLAlchemy 3.0.5 - ORM ve database yönetimi
+* **Dynamic Inventory:** Integrated with **DummyJSON API** to fetch and synchronize real product data into a local SQLite database.
+* **Localization (Poland):** Support for **PLN** currency conversion and **BLIK** payment simulation **(UI Concept)**.
+* **User Management:** Secure authentication system with password hashing (SHA256) and session management.
+* **Advanced Cart & Checkout:** Real-time cart updates, guest checkout support, and an order tracking system **(Simulation)**.
+* **Review System (UI Concept):** Designed interface for user-generated content and rating logic.
 
-SQLite - Veritabanı (geliştirme ortamı için)
+## 🛠️ Technical Stack
 
-Werkzeug - Şifre hashleme ve güvenlik
+* **Backend:** Python 3.12, Flask 2.3.3
+* **Database (ORM):** Flask-SQLAlchemy 3.0.5 with SQLite (Development)
+* **Frontend:** HTML5, CSS3, JavaScript (ES6+), Jinja2 Template Engine
+* **Security:** Werkzeug (Password Hashing), SQLAlchemy (SQLi Protection)
+* **UI Elements:** Font Awesome 6
 
-Frontend:
-HTML5 - Sayfa yapısı
+## 📂 Project Architecture
 
-CSS3 - Tasarım ve responsive layout
+### **Database Schema**
+The system relies on a relational database design with the following core models:
+* `User`: Authentication and profile management.
+* `Product & Category`: Inventory management with 20+ predefined categories.
+* `Cart & Order`: Transactional logic and order item tracking.
+* `ShippingTracking (Simulated)`: Interface for real-time order status simulation.
 
-JavaScript - Dinamik işlevler
-
-Jinja2 - Template engine
-
-Font Awesome 6 - İkonlar
-
-API Entegrasyonları:
-DummyJSON API - Ürün verileri için
-
-RESTful API - Kendi backend API'lerimiz
-
-🗃️ Veritabanı Yapısı
-Modeller:
-User - Kullanıcı bilgileri ve kimlik doğrulama
-
-Product - Ürün katalog ve detayları
-
-Category - Kategori yönetimi
-
-Cart - Sepet işlemleri
-
-Order - Sipariş yönetimi
-
-OrderItem - Sipariş detayları
-
-Review - Ürün yorum ve rating sistemi
-
-ShippingTracking - Kargo takip sistemi
-
-🌐 Veri Kaynakları
-1. Ürün Verileri
-Kaynak: DummyJSON API (https://dummyjson.com/products)
-
-Yöntem: REST API GET isteği
-
-İşlem: API'den gelen veriler otomatik olarak SQLite veritabanına kaydediliyor
-
-Dönüşüm: USD fiyatlar PLN'ye çevriliyor (1 USD = 4 PLN)
-
-2. Kategori Verileri
-Kaynak: Manuel olarak tanımlandı (20+ kategori)
-
-Yapı: Smartphones, Laptops, Fragrances, Skincare, Groceries, vb.
-
-3. Kullanıcı Verileri
-Kaynak: Kullanıcı kayıt formu
-
-Güvenlik: Şifreler hashlenerek saklanıyor
-
-⚙️ Proje Özellikleri
-Temel Özellikler:
-✅ Kullanıcı kayıt ve giriş sistemi
-
-✅ Ürün katalog ve arama
-
-✅ Sepet yönetimi (misafir/üye)
-
-✅ Ödeme sistemi (BLIK + Kredi Kartı)
-
-✅ Sipariş takip ve yönetimi
-
-✅ Ürün yorum ve rating sistemi
-
-Gelişmiş Özellikler:
-🚀 Responsive tasarım (mobil uyumlu)
-
-🚀 Gerçek zamanlı sepet güncelleme
-
-🚀 Sipariş simülasyon ve takip
-
-🚀 API entegrasyonları
-
-🚀 Güvenli ödeme sistemi
-
-📊 Teknik Detaylar
-Database Bağlantısı:
-python
-# SQLite veritabanı bağlantısı
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-API Entegrasyonu:
-python
-# Ürünleri API'den çekme
-response = requests.get('https://dummyjson.com/products?limit=20')
+### **API Integration & Data Processing**
+Products are fetched from the external DummyJSON API and processed locally:
+```python
+# Real-time API Fetching Logic
+response = requests.get('[https://dummyjson.com/products?limit=20](https://dummyjson.com/products?limit=20)')
 products_data = response.json()['products']
-Güvenlik:
-python
-# Şifre hashleme
-user.set_password(password)  # SHA256 ile hashleniyor
-user.check_password(password)  # Güvenli doğrulama
-🎯 Projenin Yenilikçi Yönleri
-Çift Ödeme Sistemi - BLIK (Polonya'ya özel) + Kredi Kartı
-
-Gerçek Zamanlı Takip - Sipariş durumu simülasyonu
-
-Misafir Alışverişi - Üye olmadan sepete ekleme
-
-API Entegrasyonu - Gerçek ürün verileri
-
-Responsive Tasarım - Tüm cihazlarda çalışır
-
-📈 Performans Optimizasyonları
-Lazy Loading - Gerektiğinde veri çekme
-
-Database Indexing - Hızlı arama ve sorgular
-
-Session Management - Etkili kullanıcı yönetimi
-
-Error Handling - Kapsamlı hata yönetimi
-
-🔒 Güvenlik Önlemleri
-Şifre hashleme (Werkzeug)
-
-SQL injection koruması (SQLAlchemy)
-
-XSS koruması (Jinja2 template escaping)
-
-Session güvenliği
-
-Form validation
-
----------------------------------------------
-
-Önce demo yapın (ana sayfa → ürün → sepet → ödeme)
-
-BLIK ödemesini gösterin (Polonya'ya özel)
-
-Sipariş takip simülasyonunu gösterin
-
-Responsive tasarımı gösterin (mobil görünüm)
-
-Teknoloji stack'ini anlatın
-
-Veri akışını açıklayın (API → Database → Frontend)
+# Data is then mapped and converted (1 USD = 4 PLN)
